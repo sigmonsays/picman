@@ -17,11 +17,20 @@ type Autosort struct {
 }
 
 func (me *Autosort) Flags() []cli.Flag {
+	incomingDir := "/data/Pictures-Android/AndroidDCIM/Camera"
+	destDir := "/data/Pictures-incoming"
 	ret := []cli.Flag{
-		&cli.StringSliceFlag{
-			Name:    "config",
-			Usage:   "config file",
-			Aliases: []string{"c"},
+		&cli.StringFlag{
+			Name:    "src-dir",
+			Usage:   "source directory",
+			Aliases: []string{"s"},
+			Value:   incomingDir,
+		},
+		&cli.StringFlag{
+			Name:    "dest-dir",
+			Usage:   "destination directory",
+			Aliases: []string{"d"},
+			Value:   destDir,
 		},
 	}
 	return ret
@@ -38,13 +47,14 @@ directories:
     dest_dir: /data/Pictures-incoming/AndroidDCIM
 `
 
-func (me *Autosort) Action(ctx *cli.Context) error {
+func (me *Autosort) Action(c *cli.Context) error {
+	incomingDir := c.String("src-dir")
+	destDir := c.String("dest-dir")
 
 	// copy files from incoming directories (and keep track of them)
 	// once copied to an incoming directory we mark them in the DB
-	incomingDir := "/data/Pictures-Android/AndroidDCIM/Camera"
 
-	err = me.ProcessFiles(picDb, incomingDir, destDir)
+	err := me.ProcessDir(incomingDir, destDir)
 	if err != nil {
 		return err
 	}
@@ -52,8 +62,8 @@ func (me *Autosort) Action(ctx *cli.Context) error {
 	return nil
 }
 
-func (me *Autosort) CopyIncomingFiles(picDb *db.Db, dir string) error {
-	log.Tracef("CopyIncomingFiles %s", dir)
+func (me *Autosort) ProcessDir(srcdir, dstdir string) error {
+	log.Tracef("ProcessDir %s", srcdir)
 
 	walkfn := func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
@@ -64,55 +74,33 @@ func (me *Autosort) CopyIncomingFiles(picDb *db.Db, dir string) error {
 			return nil
 		}
 
-		err = me.ProcessFile(picDb, dir, path, info)
+		err = me.ProcessFile(srcdir, path, info, dstdir)
 		if err != nil {
-			log.Warnf("ProcessFile: %s", dir, err)
+			log.Warnf("ProcessFile: %s", path, err)
 		}
 		return nil
 	}
-	err := filepath.Walk(dir, walkfn)
+	err := filepath.Walk(srcdir, walkfn)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (me *Autosort) ProcessFile(picDb *db.Db, root, fullpath string, info fs.FileInfo) error {
-
-	assetFound := false
-	sha256 := ""
-	row, err := picDb.GetAssetRow(fullpath)
-	if err == nil {
-		assetFound = true
-	}
-	if err != nil {
-		log.Tracef("GetAssetRow %s: %s", fullpath, err)
-	}
-
-	log.Tracef("ProcessFile %s: found:%v", fullpath, assetFound)
-	if row != nil {
-		log.Tracef("sha256 %s", row.Sha256)
-	}
+func (me *Autosort) ProcessFile(root, fullpath string, info fs.FileInfo, dstdir string) error {
 	if ShouldProcess(fullpath, info) == false {
-		log.Tracef("ProcessFile %s: found:%v skipped", fullpath, assetFound)
+		log.Tracef("ProcessFile %s: skipped", fullpath)
 		return nil
 	}
 
-	if assetFound == false {
-		sha, err := Sha256File(fullpath)
-		if err != nil {
-			return err
-		}
-		log.Tracef("Sha256 %s: %s", fullpath, sha)
-		sha256 = sha
-		row := &db.AssetRow{}
-		row.FullPath = fullpath
-		row.Sha256 = sha256
-		err = picDb.InsertAssetRow(row)
-		if err != nil {
-			return err
-		}
+	// generate sha256
+	sha256 := ""
+	sha, err := Sha256File(fullpath)
+	if err != nil {
+		return err
 	}
+	sha256 = sha
+	log.Tracef("Sha256 %s: %s", fullpath, sha256)
 
 	return nil
 }
