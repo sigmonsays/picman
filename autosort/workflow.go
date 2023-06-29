@@ -1,11 +1,16 @@
 package autosort
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
 	"path/filepath"
 
 	"github.com/sigmonsays/picman/autosort/task"
 	"github.com/sigmonsays/picman/core"
 )
+
+var StateSubDir = ".picman/state"
 
 func RunWorkflow(workflow *core.Workflow) error {
 	log.Tracef("start %s", workflow.Fullpath)
@@ -28,7 +33,13 @@ func RunWorkflow(workflow *core.Workflow) error {
 	state := core.NewState()
 
 	// determine the state path
-	statefile := filepath.Join(workflow.Root, ".picman/state")
+	cs := sha256.New()
+	fmt.Fprintf(cs, workflow.Fullpath)
+	sha := cs.Sum(nil)
+	shaStr := hex.EncodeToString(sha)
+	basename := filepath.Base(workflow.Fullpath)
+	statebasename := basename + "-" + shaStr[:6]
+	statefile := filepath.Join(workflow.Root, StateSubDir, statebasename)
 
 	for _, step := range steps {
 		log.Tracef("run task %s for %s", step.Name, workflow.Fullpath)
@@ -38,7 +49,12 @@ func RunWorkflow(workflow *core.Workflow) error {
 			break
 		}
 
-		state.Save(statepath)
+		err = state.Save(statefile)
+		if err != nil {
+			log.Warnf("save state file %s failed: %s", statefile, err)
+			break
+		}
+
 	}
 	return nil
 }

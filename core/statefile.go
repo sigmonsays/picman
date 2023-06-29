@@ -24,6 +24,10 @@ func NewState() *State {
 
 type State struct {
 
+	// source device of image
+	// - Phone10 for phone
+	Source string
+
 	// full path to the original filename we're importing
 	OriginalFilename string
 
@@ -68,10 +72,6 @@ type Date struct {
 }
 
 func (me *State) Save(path string) error {
-	// cs := sha256.New()
-	// fmt.Fprintf(cs, me.OriginalFilename)
-	// sha := cs.Sum(nil)
-	// shaStr := hex.EncodeToString(sha)
 
 	buf, err := json.MarshalIndent(me, "", " ")
 	if err != nil {

@@ -7,13 +7,14 @@ import (
 	"github.com/sigmonsays/picman/core"
 )
 
-func (me *Autosort) ProcessFile(root, fullpath string, info fs.FileInfo, dstdir string) error {
+func (me *Autosort) ProcessFile(root, fullpath string, info fs.FileInfo, dstdir string, source string) error {
 	relpath, err := filepath.Rel(root, fullpath)
 	if err != nil {
 		return err
 	}
 
 	workflow := &core.Workflow{}
+	workflow.Source = source
 	workflow.Root = root
 	workflow.Fullpath = fullpath
 	workflow.Info = info

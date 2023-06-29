@@ -16,6 +16,7 @@ type StartWorkflow struct {
 
 func (me *StartWorkflow) Run(state *core.State) error {
 
+	state.Source = me.Workflow.Source
 	state.Stat.Size = int(me.Workflow.Info.Size())
 	state.Stat.MTime = me.Workflow.Info.ModTime()
 	state.OriginalFilename = me.Workflow.Fullpath

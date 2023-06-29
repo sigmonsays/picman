@@ -5,6 +5,10 @@ import (
 )
 
 type Workflow struct {
+
+	// source flag given on cli
+	Source string
+
 	// information about the file
 	Root     string
 	Fullpath string

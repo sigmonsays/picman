@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io/fs"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -13,6 +14,8 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+var DirMask = os.FileMode(0755)
+
 type Autosort struct {
 	App *core.App
 }
@@ -21,6 +24,11 @@ func (me *Autosort) Flags() []cli.Flag {
 	incomingDir := "/data/Pictures-Android/AndroidDCIM/Camera"
 	destDir := "/data/Pictures"
 	ret := []cli.Flag{
+		&cli.StringFlag{
+			Name:    "source",
+			Usage:   "source",
+			Aliases: []string{"S"},
+		},
 		&cli.StringFlag{
 			Name:    "source-dir",
 			Usage:   "source directory",
@@ -40,11 +48,12 @@ func (me *Autosort) Flags() []cli.Flag {
 func (me *Autosort) Action(c *cli.Context) error {
 	incomingDir := c.String("source-dir")
 	destDir := c.String("destination-dir")
+	source := c.String("source")
 
 	// copy files from incoming directories (and keep track of them)
 	// once copied to an incoming directory we mark them in the DB
 
-	err := me.ProcessDir(incomingDir, destDir)
+	err := me.ProcessDir(incomingDir, destDir, source)
 	if err != nil {
 		return err
 	}
@@ -52,8 +61,22 @@ func (me *Autosort) Action(c *cli.Context) error {
 	return nil
 }
 
-func (me *Autosort) ProcessDir(srcdir, dstdir string) error {
+func (me *Autosort) ProcessDir(srcdir, dstdir string, source string) error {
 	log.Tracef("ProcessDir %s", srcdir)
+
+	// begin procesing
+
+	statedir := filepath.Join(srcdir, StateSubDir)
+	os.MkdirAll(statedir, DirMask)
+
+	// ensure statedir exists
+	st, err := os.Stat(statedir)
+	if err != nil {
+		return fmt.Errorf("state dir %s does not exist: %s", statedir, err)
+	}
+	if st.IsDir() == false {
+		return fmt.Errorf("state dir %s: is not a directory", statedir)
+	}
 
 	walkfn := func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
@@ -64,13 +87,13 @@ func (me *Autosort) ProcessDir(srcdir, dstdir string) error {
 			return nil
 		}
 
-		err = me.ProcessFile(srcdir, path, info, dstdir)
+		err = me.ProcessFile(srcdir, path, info, dstdir, source)
 		if err != nil {
 			log.Warnf("ProcessFile %s: %s", path, err)
 		}
 		return nil
 	}
-	err := filepath.Walk(srcdir, walkfn)
+	err = filepath.Walk(srcdir, walkfn)
 	if err != nil {
 		return err
 	}
