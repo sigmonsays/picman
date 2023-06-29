@@ -1,4 +1,4 @@
-package main
+package autosort
 
 import (
 	"bytes"
@@ -10,11 +10,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/sigmonsays/picman/core"
 	"github.com/urfave/cli/v2"
 )
 
 type Autosort struct {
-	app *App
+	App *core.App
 }
 
 func (me *Autosort) Flags() []cli.Flag {
