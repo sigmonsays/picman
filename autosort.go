@@ -80,7 +80,7 @@ func (me *Autosort) ProcessDir(srcdir, dstdir string) error {
 
 		err = me.ProcessFile(srcdir, path, info, dstdir)
 		if err != nil {
-			log.Warnf("ProcessFile: %s", path, err)
+			log.Warnf("ProcessFile %s: %s", path, err)
 		}
 		return nil
 	}
@@ -115,7 +115,22 @@ func (me *Autosort) ProcessFile(root, fullpath string, info fs.FileInfo, dstdir 
 	basename := filepath.Base(fullpath)
 	destpath := filepath.Join(dstdir, year, month, basename)
 
-	log.Tracef("src:%s size:%d destpath:%s", relpath, srcSize, destpath)
+	dstExists := false
+	dstSize := int64(0)
+	dst, err := os.Stat(destpath)
+	if err == nil {
+		dstExists = true
+		dstSize = dst.Size()
+	} else {
+		dstExists = false
+	}
+	sizeMismatch := srcSize != dstSize
+
+	if !dstExists {
+		log.Tracef(" destination exists: %v", dstExists)
+	}
+
+	log.Tracef("src:%s size:%d mismatch:%v destpath:%s", relpath, srcSize, sizeMismatch, destpath)
 
 	// do we need to convert it?
 	// heic ->  jpg
