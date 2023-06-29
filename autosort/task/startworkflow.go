@@ -18,8 +18,9 @@ func (me *StartWorkflow) Run(state *core.State) error {
 
 	state.Stat.Size = int(me.Workflow.Info.Size())
 	state.Stat.MTime = me.Workflow.Info.ModTime()
-
 	state.OriginalFilename = me.Workflow.Fullpath
+
+	// state.Ext =
 
 	return nil
 }

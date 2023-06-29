@@ -19,7 +19,14 @@ type CheckSupportedType struct {
 }
 
 func (me *CheckSupportedType) Run(state *core.State) error {
-	err := ShouldProcess(state.OriginalFilename, state.Stat)
+
+	// populate state file with extension
+	base := filepath.Base(state.OriginalFilename)
+	base = strings.ToLower(base)
+	ext := filepath.Ext(base)
+	state.Ext = ext
+
+	err := ShouldProcess(state.OriginalFilename, state)
 	process := (err == nil)
 
 	if !process {
@@ -37,18 +44,18 @@ var SupportedImageExt = map[string]bool{
 	".mp4":  true,
 }
 
-func ShouldProcess(path string, stat *core.Stat) error {
+func ShouldProcess(path string, state *core.State) error {
+	stat := state.Stat
 	if stat.Size == 0 {
 		return fmt.Errorf("skip zero byte file %s", path)
 	}
+	if state.Ext == "" {
+		return fmt.Errorf("No extension provided")
+	}
 
-	base := filepath.Base(path)
-	base = strings.ToLower(base)
-	ext := filepath.Ext(base)
-
-	supported, found := SupportedImageExt[ext]
+	supported, found := SupportedImageExt[state.Ext]
 	if found == false {
-		return fmt.Errorf("ext %s is not supported", ext)
+		return fmt.Errorf("ext %s is not supported", state.Ext)
 	}
 	if supported == false {
 		return fmt.Errorf("Not supported")
