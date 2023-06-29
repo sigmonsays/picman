@@ -41,7 +41,7 @@ func (me *ObtainDateTaken) Run(state *core.State) error {
 	}
 	switch dateKey {
 
-	case "DateTimeOriginal":
+	case "DateTimeOriginal", "CreateDate", "TrackCreateDate":
 
 		// 2023:03:02 18:13:31
 		tm, err := time.Parse("2006:01:02 15:04:05", dateVal)
