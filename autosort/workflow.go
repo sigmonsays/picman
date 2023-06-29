@@ -42,6 +42,10 @@ func RunWorkflow(workflow *core.Workflow, state *core.State, opts *Options) erro
 			Name: "ObtainDateTaken",
 			Task: task.NewObtainDateTaken(workflow),
 		},
+		{
+			Name: "ChecksumFile",
+			Task: task.NewChecksumFile(workflow),
+		},
 	}
 
 	// determine the state path
