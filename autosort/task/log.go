@@ -7,5 +7,5 @@ import (
 var log gologging.Logger
 
 func init() {
-	log = gologging.Register("task", func(newlog gologging.Logger) { log = newlog })
+	log = gologging.Register("autosort.task", func(newlog gologging.Logger) { log = newlog })
 }

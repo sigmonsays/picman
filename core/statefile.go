@@ -4,24 +4,40 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
+	"time"
 )
 
-var StateFileMask os.FileMode
+var StateMask os.FileMode
 
 func init() {
-	StateFileMask = os.FileMode(0644)
+	StateMask = os.FileMode(0644)
 }
 
-type StateFile struct {
+func NewState() *State {
+	ret := &State{}
+	ret.Stat = &Stat{}
+	ret.Date = &Date{}
+	ret.Checksum = &Checksum{}
+	ret.ExifData = &ExifData{}
+	return ret
+}
+
+type State struct {
 
 	// full path to the original filename we're importing
 	OriginalFilename string
+
+	// extension of filename (.jpg)
+	Ext string
 
 	// full path to the destination filenaem
 	DestinationFilename string
 
 	// the date the picture was taken
 	Date *Date
+
+	// data from stat
+	Stat *Stat
 
 	// checksum of the file
 	Checksum *Checksum
@@ -31,6 +47,11 @@ type StateFile struct {
 
 	// processing event logs
 	Logs []string
+}
+
+type Stat struct {
+	Size  int
+	MTime time.Time
 }
 
 type Checksum struct {
@@ -46,7 +67,7 @@ type Date struct {
 	Hour, Minute, Second int
 }
 
-func (me *StateFile) Save(path string) error {
+func (me *State) Save(path string) error {
 	// cs := sha256.New()
 	// fmt.Fprintf(cs, me.OriginalFilename)
 	// sha := cs.Sum(nil)
@@ -56,7 +77,7 @@ func (me *StateFile) Save(path string) error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(path, buf, StateFileMask)
+	err = ioutil.WriteFile(path, buf, StateMask)
 	if err != nil {
 		return err
 	}
