@@ -6,6 +6,9 @@ mkShell {
   buildInputs = [
         go_1_20
         gomod2nix
-        exiftools
+
+        # runtime deps
+        exiftool
+        libheif
   ];
 }
