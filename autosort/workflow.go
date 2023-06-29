@@ -34,6 +34,10 @@ func RunWorkflow(workflow *core.Workflow, state *core.State, opts *Options) erro
 			Name: "PopulateExif",
 			Task: task.NewPopulateExif(workflow),
 		},
+		{
+			Name: "CheckExif",
+			Task: task.NewCheckExif(workflow),
+		},
 	}
 
 	// determine the state path
