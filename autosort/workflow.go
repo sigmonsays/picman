@@ -12,6 +12,7 @@ import (
 )
 
 var StateSubDir = ".picman/state"
+var ErrorSubDir = ".picman/error"
 
 func RunWorkflow(workflow *core.Workflow, state *core.State, opts *Options) error {
 	log.Tracef("")
@@ -43,6 +44,7 @@ func RunWorkflow(workflow *core.Workflow, state *core.State, opts *Options) erro
 	basename := filepath.Base(workflow.Fullpath)
 	statebasename := basename + "-" + shaStr[:6] + ".json"
 	statefile := filepath.Join(workflow.Root, StateSubDir, statebasename)
+	errorfile := filepath.Join(workflow.Root, ErrorSubDir, statebasename)
 	log.Tracef("state file %s", statefile)
 
 	if opts.Force {
@@ -53,9 +55,11 @@ func RunWorkflow(workflow *core.Workflow, state *core.State, opts *Options) erro
 		state.Load(statefile)
 	}
 
+	var taskErr error
+
 	for _, step := range steps {
 		log.Tracef("run task %s for %s", step.Name, workflow.Fullpath)
-		taskErr := step.Task.Run(state)
+		taskErr = step.Task.Run(state)
 
 		err := state.Save(statefile)
 		if err != nil {
@@ -76,6 +80,10 @@ func RunWorkflow(workflow *core.Workflow, state *core.State, opts *Options) erro
 			break
 		}
 
+	}
+
+	if taskErr != nil {
+		os.Symlink(statefile, errorfile)
 	}
 
 	return nil

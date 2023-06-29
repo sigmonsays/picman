@@ -72,6 +72,11 @@ func (me *Autosort) Action(c *cli.Context) error {
 	opts.OneFile = onefile
 	opts.Force = force
 
+	err := me.PrepareSourceDir(sourceDir)
+	if err != nil {
+		return err
+	}
+
 	if onefile != "" {
 
 		fullpath := onefile
@@ -90,7 +95,7 @@ func (me *Autosort) Action(c *cli.Context) error {
 		return nil
 	}
 
-	err := me.ProcessDir(sourceDir, destDir, source, opts)
+	err = me.ProcessDir(sourceDir, destDir, source, opts)
 	if err != nil {
 		return err
 	}
@@ -98,13 +103,12 @@ func (me *Autosort) Action(c *cli.Context) error {
 	return nil
 }
 
-func (me *Autosort) ProcessDir(srcdir, dstdir string, source string, opts *Options) error {
-	log.Tracef("ProcessDir %s", srcdir)
-
+func (me *Autosort) PrepareSourceDir(srcdir string) error {
 	// begin procesing
-
 	statedir := filepath.Join(srcdir, StateSubDir)
 	os.MkdirAll(statedir, DirMask)
+	errordir := filepath.Join(srcdir, ErrorSubDir)
+	os.MkdirAll(errordir, DirMask)
 
 	// ensure statedir exists
 	st, err := os.Stat(statedir)
@@ -114,6 +118,12 @@ func (me *Autosort) ProcessDir(srcdir, dstdir string, source string, opts *Optio
 	if st.IsDir() == false {
 		return fmt.Errorf("state dir %s: is not a directory", statedir)
 	}
+
+	return nil
+}
+
+func (me *Autosort) ProcessDir(srcdir, dstdir string, source string, opts *Options) error {
+	log.Tracef("ProcessDir %s", srcdir)
 
 	walkfn := func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
@@ -138,7 +148,7 @@ func (me *Autosort) ProcessDir(srcdir, dstdir string, source string, opts *Optio
 		}
 		return nil
 	}
-	err = filepath.Walk(srcdir, walkfn)
+	err := filepath.Walk(srcdir, walkfn)
 	if err != nil {
 		return err
 	}
