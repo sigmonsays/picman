@@ -14,11 +14,11 @@ func (me *Autosort) ProcessFile(root, fullpath string, info fs.FileInfo, dstdir 
 		return err
 	}
 
-	log.Tracef("process file %s relpath:%s", fullpath, relpath)
-
 	if strings.HasPrefix(relpath, StateSubDir) {
 		return nil
 	}
+
+	// log.Tracef("process file %s relpath:%s", fullpath, relpath)
 
 	workflow := &core.Workflow{}
 	workflow.Source = source

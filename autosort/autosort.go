@@ -89,7 +89,11 @@ func (me *Autosort) ProcessDir(srcdir, dstdir string, source string) error {
 
 		err = me.ProcessFile(srcdir, path, info, dstdir, source)
 		if err != nil {
+			if err == core.StopWorkflow {
+				return fmt.Errorf("%s indicates stop workflow", path)
+			}
 			log.Warnf("ProcessFile %s: %s", path, err)
+			return nil
 		}
 		return nil
 	}

@@ -19,6 +19,12 @@ type CheckSupportedType struct {
 }
 
 func (me *CheckSupportedType) Run(state *core.State) error {
+
+	// if we've already processed this then just abort
+	if state.DoNotProcess {
+		return core.StopProcessing
+	}
+
 	// populate state file with extension
 	base := filepath.Base(state.OriginalFilename)
 	base = strings.ToLower(base)
@@ -29,7 +35,9 @@ func (me *CheckSupportedType) Run(state *core.State) error {
 	process := (err == nil)
 
 	if !process {
-		return core.StopWorkflow
+		state.DoNotProcess = true
+		state.Logf("%s", err)
+		return core.StopProcessing
 	}
 	return nil
 }

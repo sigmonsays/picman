@@ -9,7 +9,7 @@ var (
 	// stop processing current file and move on
 	StopProcessing = errors.New("stop processing")
 
-	// stop processing entire workflow
+	// stop processing entire workflow and abort hard
 	StopWorkflow = errors.New("stop workflow")
 
 	// skip step and keep processing next step

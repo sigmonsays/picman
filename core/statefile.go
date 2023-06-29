@@ -2,6 +2,7 @@ package core
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"time"
@@ -27,6 +28,9 @@ type State struct {
 	// source device of image
 	// - Phone10 for phone
 	Source string
+
+	// do not process
+	DoNotProcess bool
 
 	// full path to the original filename we're importing
 	OriginalFilename string
@@ -82,4 +86,9 @@ func (me *State) Save(path string) error {
 		return err
 	}
 	return nil
+}
+
+func (me *State) Logf(s string, args ...interface{}) {
+	msg := fmt.Sprintf(s, args...)
+	me.Logs = append(me.Logs, msg)
 }
