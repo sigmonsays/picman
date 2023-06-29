@@ -25,7 +25,7 @@ func (me *GenerateFinalName) Run(state *core.State) error {
 	}
 	log.Tracef("Generating final name path under destination-dir %s", me.Workflow.DestinationDir)
 
-	ym := fmt.Sprintf("%d/%d", state.Date.Year, state.Date.Month)
+	ym := fmt.Sprintf("%04d/%02d", state.Date.Year, state.Date.Month)
 	cs6 := state.Checksum.Sha256[:6]
 
 	// preserve basename
