@@ -27,6 +27,7 @@ func (me *Autosort) ProcessFile(root, fullpath string, info fs.FileInfo, dstdir 
 	workflow.Fullpath = fullpath
 	workflow.Info = info
 	workflow.RelPath = relpath
+	workflow.DestinationDir = dstdir
 
 	state := core.NewState()
 

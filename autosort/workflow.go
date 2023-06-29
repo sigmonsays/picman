@@ -46,6 +46,10 @@ func RunWorkflow(workflow *core.Workflow, state *core.State, opts *Options) erro
 			Name: "ChecksumFile",
 			Task: task.NewChecksumFile(workflow),
 		},
+		{
+			Name: "GenerateFinalName",
+			Task: task.NewGenerateFinalName(workflow),
+		},
 	}
 
 	// determine the state path
