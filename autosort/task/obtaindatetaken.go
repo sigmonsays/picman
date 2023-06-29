@@ -2,6 +2,7 @@ package task
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/sigmonsays/picman/core"
@@ -29,19 +30,50 @@ func (me *ObtainDateTaken) Run(state *core.State) error {
 		return state.StopProcessing("No exif data")
 	}
 
-	dateKey := state.ExifData.FindFirst("DateTimeOriginal", "CreateDate", "TrackCreateDate")
-	if dateKey == "" {
-		return fmt.Errorf("No date key found in exif data")
+	// order of keys we should try
+	dateKeys := []string{
+		"DateTimeOriginal",
+		"CreateDate",
+		"TrackCreateDate",
+		"FileModifyDate",
 	}
-	log.Tracef("DateKey is %s", dateKey)
+	dateKey := ""
+	dateVal := ""
+	var err error
+	for _, dk := range dateKeys {
+		if state.ExifData.KeyExists(dk) == false {
+			continue
+		}
+		dateVal, err = state.ExifData.GetString(dk)
+		if err != nil {
+			continue
+		}
 
-	dateVal, err := state.ExifData.GetString(dateKey)
-	if err != nil {
-		return fmt.Errorf("%s key is not a string", dateKey)
+		if strings.HasPrefix(dateVal, "0000") {
+			continue
+		}
+		dateKey = dk
+		break
 	}
+
+	if dateKey == "" {
+		return state.StopProcessing("No date key found in exif")
+	}
+
+	log.Tracef("using dateKey %s from exif", dateKey)
+
+	if dateKey == "FileModifyDate" {
+		// 2023:06:29 18:41:02+00:00
+		idx := strings.Index(dateVal, "+")
+		if idx > 0 {
+			dateVal = dateVal[:idx]
+			log.Tracef("Dropping weird timezone, new date %s", dateVal)
+		}
+	}
+
 	switch dateKey {
 
-	case "DateTimeOriginal", "CreateDate", "TrackCreateDate":
+	case "DateTimeOriginal", "CreateDate", "TrackCreateDate", "FileModifyDate":
 
 		// 2023:03:02 18:13:31
 		tm, err := time.Parse("2006:01:02 15:04:05", dateVal)
