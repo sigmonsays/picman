@@ -41,19 +41,41 @@ func (me *Autosort) Flags() []cli.Flag {
 			Aliases: []string{"d"},
 			Value:   destDir,
 		},
+		&cli.StringFlag{
+			Name:    "onefile",
+			Usage:   "process just one file",
+			Aliases: []string{""},
+			Value:   destDir,
+		},
 	}
 	return ret
 }
 
 func (me *Autosort) Action(c *cli.Context) error {
-	incomingDir := c.String("source-dir")
+	sourceDir := c.String("source-dir")
 	destDir := c.String("destination-dir")
 	source := c.String("source")
+	onefile := c.String("onefile")
 
-	// copy files from incoming directories (and keep track of them)
-	// once copied to an incoming directory we mark them in the DB
+	if onefile != "" {
 
-	err := me.ProcessDir(incomingDir, destDir, source)
+		fullpath := onefile
+		if x, err := filepath.Abs(onefile); err == nil {
+			fullpath = x
+		}
+		info, err := os.Stat(fullpath)
+		if err != nil {
+			return err
+		}
+
+		err = me.ProcessFile(sourceDir, fullpath, info, destDir, source, onefile)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
+	err := me.ProcessDir(sourceDir, destDir, source)
 	if err != nil {
 		return err
 	}
@@ -87,10 +109,14 @@ func (me *Autosort) ProcessDir(srcdir, dstdir string, source string) error {
 			return nil
 		}
 
-		err = me.ProcessFile(srcdir, path, info, dstdir, source)
+		err = me.ProcessFile(srcdir, path, info, dstdir, source, "")
 		if err != nil {
 			if err == core.StopWorkflow {
 				return fmt.Errorf("%s indicates stop workflow", path)
+			} else if err == core.StopProcessing {
+				// stop processing current file and advance to next
+				log.Tracef("%s stop processing file", path)
+				return nil
 			}
 			log.Warnf("ProcessFile %s: %s", path, err)
 			return nil

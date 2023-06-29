@@ -22,6 +22,7 @@ func (me *CheckSupportedType) Run(state *core.State) error {
 
 	// if we've already processed this then just abort
 	if state.DoNotProcess {
+		log.Tracef("DoNotProcess is set, StopProcessing")
 		return core.StopProcessing
 	}
 

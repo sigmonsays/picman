@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/sigmonsays/picman/autosort/task"
@@ -12,7 +13,7 @@ import (
 
 var StateSubDir = ".picman/state"
 
-func RunWorkflow(workflow *core.Workflow) error {
+func RunWorkflow(workflow *core.Workflow, state *core.State) error {
 	log.Tracef("")
 	log.Tracef("start %s", workflow.Fullpath)
 
@@ -30,9 +31,6 @@ func RunWorkflow(workflow *core.Workflow) error {
 		},
 	}
 
-	// start a state file
-	state := core.NewState()
-
 	// determine the state path
 	cs := sha256.New()
 	fmt.Fprintf(cs, workflow.Fullpath)
@@ -42,6 +40,10 @@ func RunWorkflow(workflow *core.Workflow) error {
 	statebasename := basename + "-" + shaStr[:6] + ".json"
 	statefile := filepath.Join(workflow.Root, StateSubDir, statebasename)
 	log.Tracef("state file %s", statefile)
+
+	if st, err := os.Stat(statefile); err == nil && st.IsDir() == false {
+		state.Load(statefile)
+	}
 
 	for _, step := range steps {
 		log.Tracef("run task %s for %s", step.Name, workflow.Fullpath)
@@ -55,17 +57,18 @@ func RunWorkflow(workflow *core.Workflow) error {
 
 		if taskErr != nil {
 			// tasks have one way to stop processing
-			if err == core.StopProcessing {
+			if taskErr == core.StopProcessing {
 				return core.StopProcessing
 
-			} else if err == core.SkipStep {
+			} else if taskErr == core.SkipStep {
 				continue
 			}
 
-			log.Warnf("step %s on %s failed: %s", step.Name, workflow.Fullpath, err)
+			log.Warnf("step:%s %s failed: %s", step.Name, workflow.Fullpath, taskErr)
 			break
 		}
 
 	}
+
 	return nil
 }

@@ -75,6 +75,19 @@ type Date struct {
 	Hour, Minute, Second int
 }
 
+func (me *State) Load(path string) error {
+
+	buf, err := ioutil.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(buf, me)
+	if err != nil {
+		return err
+	}
+	return nil
+
+}
 func (me *State) Save(path string) error {
 
 	buf, err := json.MarshalIndent(me, "", " ")

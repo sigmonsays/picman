@@ -1,6 +1,8 @@
 package autosort
 
 import (
+	"encoding/json"
+	"fmt"
 	"io/fs"
 	"path/filepath"
 	"strings"
@@ -8,7 +10,7 @@ import (
 	"github.com/sigmonsays/picman/core"
 )
 
-func (me *Autosort) ProcessFile(root, fullpath string, info fs.FileInfo, dstdir string, source string) error {
+func (me *Autosort) ProcessFile(root, fullpath string, info fs.FileInfo, dstdir string, source string, onefile string) error {
 	relpath, err := filepath.Rel(root, fullpath)
 	if err != nil {
 		return err
@@ -27,7 +29,20 @@ func (me *Autosort) ProcessFile(root, fullpath string, info fs.FileInfo, dstdir 
 	workflow.Info = info
 	workflow.RelPath = relpath
 
-	err = RunWorkflow(workflow)
+	state := core.NewState()
+
+
+	err = RunWorkflow(workflow, state)
+
+	// if a test file is set, add extra info
+	if onefile != "" {
+		buf, _ := json.MarshalIndent(state, "", "  ")
+		if err != nil {
+			fmt.Printf("error:%s\n", err)
+		}
+		fmt.Printf("state file:\n%s\n", buf)
+	}
+
 	if err != nil {
 		return err
 	}

@@ -9,4 +9,4 @@ set -x
 picman autosort \
     --source Phone10 \
     --source-dir "$incoming" \
-    --destination-dir /data/Pictures
+    --destination-dir /data/Pictures $@
