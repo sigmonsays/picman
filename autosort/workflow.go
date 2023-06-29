@@ -38,6 +38,10 @@ func RunWorkflow(workflow *core.Workflow, state *core.State, opts *Options) erro
 			Name: "CheckExif",
 			Task: task.NewCheckExif(workflow),
 		},
+		{
+			Name: "ObtainDateTaken",
+			Task: task.NewObtainDateTaken(workflow),
+		},
 	}
 
 	// determine the state path
