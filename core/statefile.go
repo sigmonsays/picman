@@ -66,9 +66,6 @@ type Checksum struct {
 	Sha256 string
 }
 
-type ExifData struct {
-	Values map[string]interface{}
-}
 
 type Date struct {
 	Year, Month, Day     int
