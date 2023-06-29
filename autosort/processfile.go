@@ -3,6 +3,7 @@ package autosort
 import (
 	"io/fs"
 	"path/filepath"
+	"strings"
 
 	"github.com/sigmonsays/picman/core"
 )
@@ -11,6 +12,12 @@ func (me *Autosort) ProcessFile(root, fullpath string, info fs.FileInfo, dstdir 
 	relpath, err := filepath.Rel(root, fullpath)
 	if err != nil {
 		return err
+	}
+
+	log.Tracef("process file %s relpath:%s", fullpath, relpath)
+
+	if strings.HasPrefix(relpath, StateSubDir) {
+		return nil
 	}
 
 	workflow := &core.Workflow{}

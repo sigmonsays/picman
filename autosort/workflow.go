@@ -13,6 +13,7 @@ import (
 var StateSubDir = ".picman/state"
 
 func RunWorkflow(workflow *core.Workflow) error {
+	log.Tracef("")
 	log.Tracef("start %s", workflow.Fullpath)
 
 	steps := []struct {
@@ -38,13 +39,22 @@ func RunWorkflow(workflow *core.Workflow) error {
 	sha := cs.Sum(nil)
 	shaStr := hex.EncodeToString(sha)
 	basename := filepath.Base(workflow.Fullpath)
-	statebasename := basename + "-" + shaStr[:6]
+	statebasename := basename + "-" + shaStr[:6] + ".json"
 	statefile := filepath.Join(workflow.Root, StateSubDir, statebasename)
+	log.Tracef("state file %s", statefile)
 
 	for _, step := range steps {
 		log.Tracef("run task %s for %s", step.Name, workflow.Fullpath)
 		err := step.Task.Run(state)
 		if err != nil {
+
+			// tasks have one way to stop processing
+			if err == core.StopProcessing {
+				return core.StopProcessing
+			} else if err == core.SkipStep {
+				continue
+			}
+
 			log.Warnf("step %s on %s failed: %s", step.Name, workflow.Fullpath, err)
 			break
 		}

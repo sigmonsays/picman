@@ -2,6 +2,7 @@
 
 
 incoming=/data/Pictures-Android/AndroidDCIM/Camera
+incoming=/data/Pictures-tmp
 
 set -x
 
