@@ -20,7 +20,5 @@ func (me *StartWorkflow) Run(state *core.State) error {
 	state.Stat.MTime = me.Workflow.Info.ModTime()
 	state.OriginalFilename = me.Workflow.Fullpath
 
-	// state.Ext =
-
 	return nil
 }

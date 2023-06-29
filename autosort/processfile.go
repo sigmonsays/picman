@@ -8,7 +8,6 @@ import (
 )
 
 func (me *Autosort) ProcessFile(root, fullpath string, info fs.FileInfo, dstdir string) error {
-
 	relpath, err := filepath.Rel(root, fullpath)
 	if err != nil {
 		return err
@@ -27,12 +26,6 @@ func (me *Autosort) ProcessFile(root, fullpath string, info fs.FileInfo, dstdir 
 
 	return nil
 }
-
-// // determine destination path name
-// date, err := GetDate(fullpath)
-// if err != nil {
-// 	return err
-// }
 
 // year := date.Format("2006")
 // month := date.Format("01")
