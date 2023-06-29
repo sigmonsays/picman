@@ -1,14 +1,10 @@
 package autosort
 
 import (
-	"bytes"
 	"fmt"
 	"io/fs"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"strings"
-	"time"
 
 	"github.com/sigmonsays/picman/core"
 	"github.com/urfave/cli/v2"
@@ -50,7 +46,6 @@ func (me *Autosort) Flags() []cli.Flag {
 			Name:    "onefile",
 			Usage:   "process just one file",
 			Aliases: []string{""},
-			Value:   destDir,
 		},
 	}
 	return ret
@@ -78,11 +73,11 @@ func (me *Autosort) Action(c *cli.Context) error {
 	}
 
 	if onefile != "" {
-
 		fullpath := onefile
 		if x, err := filepath.Abs(onefile); err == nil {
 			fullpath = x
 		}
+		log.Tracef("onefile test %s", fullpath)
 		info, err := os.Stat(fullpath)
 		if err != nil {
 			return err
@@ -153,35 +148,4 @@ func (me *Autosort) ProcessDir(srcdir, dstdir string, source string, opts *Optio
 		return err
 	}
 	return nil
-}
-
-func GetDate(path string) (time.Time, error) {
-	args := []string{
-		"exiftool",
-		"-S",
-		"-DateTimeOriginal",
-		path,
-	}
-	none := time.Time{}
-	buf := bytes.NewBuffer(nil)
-	c := exec.Command(args[0], args[1:]...)
-	c.Stdout = buf
-	err := c.Run()
-	if err != nil {
-		return none, err
-	}
-	tmp := strings.Trim(buf.String(), "\n")
-	vals := strings.SplitN(tmp, ":", 2)
-	if len(vals) < 2 {
-		return none, fmt.Errorf("short length")
-	}
-	t := strings.Trim(vals[1], "\n\t ")
-
-	// 2023:03:02 18:13:31
-	tm, err := time.Parse("2006:01:02 15:04:05", t)
-	if len(vals) < 2 {
-		return none, fmt.Errorf("parse time %s: %s", t, err)
-	}
-
-	return tm, nil
 }
