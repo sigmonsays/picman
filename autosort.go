@@ -2,10 +2,7 @@ package main
 
 import (
 	"bytes"
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
-	"io"
 	"io/fs"
 	"os"
 	"os/exec"
@@ -25,13 +22,13 @@ func (me *Autosort) Flags() []cli.Flag {
 	destDir := "/data/Pictures"
 	ret := []cli.Flag{
 		&cli.StringFlag{
-			Name:    "src-dir",
+			Name:    "source-dir",
 			Usage:   "source directory",
 			Aliases: []string{"s"},
 			Value:   incomingDir,
 		},
 		&cli.StringFlag{
-			Name:    "dest-dir",
+			Name:    "destination-dir",
 			Usage:   "destination directory",
 			Aliases: []string{"d"},
 			Value:   destDir,
@@ -175,26 +172,6 @@ func ShouldProcess(path string, info fs.FileInfo) bool {
 		return false
 	}
 	return true
-}
-
-func Sha256File(path string) (string, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return "", err
-	}
-	defer f.Close()
-
-	cs := sha256.New()
-
-	written, err := io.Copy(cs, f)
-	if err != nil {
-		return "", err
-	}
-	sha := cs.Sum(nil)
-	shaStr := hex.EncodeToString(sha)
-	log.Tracef("checksum %s: %s %d bytes", path, shaStr, written)
-
-	return shaStr, nil
 }
 
 func GetDate(path string) (time.Time, error) {
