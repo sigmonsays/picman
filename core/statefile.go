@@ -67,12 +67,17 @@ type Checksum struct {
 }
 
 type ExifData struct {
-	Values map[string]string
+	Values map[string]interface{}
 }
 
 type Date struct {
 	Year, Month, Day     int
 	Hour, Minute, Second int
+}
+
+func (me *State) StopProcessing(s string, args ...interface{}) {
+	me.DoNotProcess = true
+	me.Logf(s, args...)
 }
 
 func (me *State) Load(path string) error {

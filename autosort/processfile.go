@@ -10,7 +10,7 @@ import (
 	"github.com/sigmonsays/picman/core"
 )
 
-func (me *Autosort) ProcessFile(root, fullpath string, info fs.FileInfo, dstdir string, source string, onefile string) error {
+func (me *Autosort) ProcessFile(root, fullpath string, info fs.FileInfo, dstdir string, source string, opts *Options) error {
 	relpath, err := filepath.Rel(root, fullpath)
 	if err != nil {
 		return err
@@ -31,11 +31,10 @@ func (me *Autosort) ProcessFile(root, fullpath string, info fs.FileInfo, dstdir 
 
 	state := core.NewState()
 
-
-	err = RunWorkflow(workflow, state)
+	err = RunWorkflow(workflow, state, opts)
 
 	// if a test file is set, add extra info
-	if onefile != "" {
+	if opts.OneFile != "" {
 		buf, _ := json.MarshalIndent(state, "", "  ")
 		if err != nil {
 			fmt.Printf("error:%s\n", err)

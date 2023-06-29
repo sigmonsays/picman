@@ -24,6 +24,11 @@ func (me *Autosort) Flags() []cli.Flag {
 	incomingDir := "/data/Pictures-Android/AndroidDCIM/Camera"
 	destDir := "/data/Pictures"
 	ret := []cli.Flag{
+		&cli.BoolFlag{
+			Name:    "force",
+			Usage:   "start without previous state",
+			Aliases: []string{"f"},
+		},
 		&cli.StringFlag{
 			Name:    "source",
 			Usage:   "source",
@@ -51,11 +56,21 @@ func (me *Autosort) Flags() []cli.Flag {
 	return ret
 }
 
+type Options struct {
+	OneFile string
+	Force   bool
+}
+
 func (me *Autosort) Action(c *cli.Context) error {
 	sourceDir := c.String("source-dir")
 	destDir := c.String("destination-dir")
 	source := c.String("source")
 	onefile := c.String("onefile")
+	force := c.Bool("force")
+
+	opts := &Options{}
+	opts.OneFile = onefile
+	opts.Force = force
 
 	if onefile != "" {
 
@@ -68,14 +83,14 @@ func (me *Autosort) Action(c *cli.Context) error {
 			return err
 		}
 
-		err = me.ProcessFile(sourceDir, fullpath, info, destDir, source, onefile)
+		err = me.ProcessFile(sourceDir, fullpath, info, destDir, source, opts)
 		if err != nil {
 			return err
 		}
 		return nil
 	}
 
-	err := me.ProcessDir(sourceDir, destDir, source)
+	err := me.ProcessDir(sourceDir, destDir, source, opts)
 	if err != nil {
 		return err
 	}
@@ -83,7 +98,7 @@ func (me *Autosort) Action(c *cli.Context) error {
 	return nil
 }
 
-func (me *Autosort) ProcessDir(srcdir, dstdir string, source string) error {
+func (me *Autosort) ProcessDir(srcdir, dstdir string, source string, opts *Options) error {
 	log.Tracef("ProcessDir %s", srcdir)
 
 	// begin procesing
@@ -109,7 +124,7 @@ func (me *Autosort) ProcessDir(srcdir, dstdir string, source string) error {
 			return nil
 		}
 
-		err = me.ProcessFile(srcdir, path, info, dstdir, source, "")
+		err = me.ProcessFile(srcdir, path, info, dstdir, source, opts)
 		if err != nil {
 			if err == core.StopWorkflow {
 				return fmt.Errorf("%s indicates stop workflow", path)

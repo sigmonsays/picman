@@ -13,7 +13,7 @@ import (
 
 var StateSubDir = ".picman/state"
 
-func RunWorkflow(workflow *core.Workflow, state *core.State) error {
+func RunWorkflow(workflow *core.Workflow, state *core.State, opts *Options) error {
 	log.Tracef("")
 	log.Tracef("start %s", workflow.Fullpath)
 
@@ -29,6 +29,10 @@ func RunWorkflow(workflow *core.Workflow, state *core.State) error {
 			Name: "CheckSupportedType",
 			Task: task.NewCheckSupportedType(workflow),
 		},
+		{
+			Name: "PopulateExif",
+			Task: task.NewPopulateExif(workflow),
+		},
 	}
 
 	// determine the state path
@@ -40,6 +44,10 @@ func RunWorkflow(workflow *core.Workflow, state *core.State) error {
 	statebasename := basename + "-" + shaStr[:6] + ".json"
 	statefile := filepath.Join(workflow.Root, StateSubDir, statebasename)
 	log.Tracef("state file %s", statefile)
+
+	if opts.Force {
+		os.Remove(statefile)
+	}
 
 	if st, err := os.Stat(statefile); err == nil && st.IsDir() == false {
 		state.Load(statefile)
