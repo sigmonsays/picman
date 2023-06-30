@@ -1,6 +1,8 @@
 package task
 
 import (
+	"os"
+
 	"github.com/sigmonsays/picman/core"
 )
 
@@ -35,6 +37,17 @@ func (me *CopyFile) Run(state *core.State) error {
 	if state.FileCopied {
 		log.Tracef("file already copied")
 		return nil
+	}
+
+	// check if the destination exists already
+	destExists := false
+	st, err := os.Stat(state.DestinationFilename)
+	if err == nil && st.IsDir() == false {
+		destExists = true
+	}
+
+	if destExists && st.Size() == 0 {
+		log.Warnf("Zero byte destination %s", state.DestinationFilename)
 	}
 
 	written, err := core.CopyFile(state.OriginalFilename, state.DestinationFilename)
