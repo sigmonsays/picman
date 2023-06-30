@@ -32,6 +32,9 @@ type State struct {
 	// do not process
 	DoNotProcess bool
 
+	// true if file copied to final destination filename
+	FileCopied bool
+
 	// full path to the original filename we're importing
 	OriginalFilename string
 

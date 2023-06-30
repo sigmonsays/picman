@@ -50,6 +50,10 @@ func RunWorkflow(workflow *core.Workflow, state *core.State, opts *Options) erro
 			Name: "GenerateFinalName",
 			Task: task.NewGenerateFinalName(workflow),
 		},
+		{
+			Name: "CopyFile",
+			Task: task.NewCopyFile(workflow),
+		},
 	}
 
 	// determine the state path
