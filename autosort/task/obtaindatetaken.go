@@ -61,6 +61,7 @@ func (me *ObtainDateTaken) Run(state *core.State) error {
 	}
 
 	log.Tracef("using dateKey %s from exif", dateKey)
+	state.Date.DateKey = dateKey
 
 	if dateKey == "FileModifyDate" {
 		// 2023:06:29 18:41:02+00:00

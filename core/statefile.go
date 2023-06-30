@@ -72,6 +72,8 @@ type Checksum struct {
 type Date struct {
 	Year, Month, Day     int
 	Hour, Minute, Second int
+
+	DateKey string
 }
 
 func (me *State) StopProcessing(s string, args ...interface{}) error {
