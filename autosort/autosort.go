@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/sigmonsays/picman/core"
 	"github.com/urfave/cli/v2"
@@ -77,6 +78,7 @@ func (me *Autosort) Action(c *cli.Context) error {
 		return err
 	}
 
+	startTs := time.Now()
 	stats := &Stats{}
 
 	if onefile != "" {
@@ -101,7 +103,12 @@ func (me *Autosort) Action(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
+	stopTs := time.Now()
+	dur := stopTs.Sub(startTs)
+	durMs := int64(dur.Milliseconds())
+	rate := stats.Processed / int(dur.Seconds())
 
+	log.Infof("processed %d files in %d ms (%d files/sec)", stats.Processed, durMs, rate)
 	return nil
 }
 
