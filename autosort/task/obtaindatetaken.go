@@ -63,13 +63,15 @@ func (me *ObtainDateTaken) Run(state *core.State) error {
 	log.Tracef("using dateKey %s from exif", dateKey)
 	state.Date.DateKey = dateKey
 
-	if dateKey == "FileModifyDate" {
-		// 2023:06:29 18:41:02+00:00
-		idx := strings.Index(dateVal, "+")
-		if idx > 0 {
-			dateVal = dateVal[:idx]
-			log.Tracef("Dropping weird timezone, new date %s", dateVal)
-		}
+	// check if timestamp has timezone info
+	// like 2023:06:29 18:41:02+00:00
+	idx1 := strings.Index(dateVal, "+")
+	idx2 := strings.Index(dateVal, "-")
+	hasTimezone := (idx1 > 0 || idx2 > 0)
+
+	layout := "2006:01:02 15:04:05"
+	if hasTimezone {
+		layout = "2006:01:02 15:04:05-07:00"
 	}
 
 	switch dateKey {
@@ -77,7 +79,7 @@ func (me *ObtainDateTaken) Run(state *core.State) error {
 	case "DateTimeOriginal", "CreateDate", "TrackCreateDate", "FileModifyDate":
 
 		// 2023:03:02 18:13:31
-		tm, err := time.Parse("2006:01:02 15:04:05", dateVal)
+		tm, err := time.Parse(layout, dateVal)
 		if err != nil {
 			return fmt.Errorf("Parse time: %s: %s", dateVal, err)
 		}
