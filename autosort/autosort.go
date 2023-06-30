@@ -25,6 +25,10 @@ func (me *Autosort) Flags() []cli.Flag {
 			Usage:   "start without previous state",
 			Aliases: []string{"f"},
 		},
+		&cli.BoolFlag{
+			Name:  "no-copy",
+			Usage: "do not copy to final destination",
+		},
 		&cli.StringFlag{
 			Name:    "source",
 			Usage:   "source",
@@ -54,6 +58,7 @@ func (me *Autosort) Flags() []cli.Flag {
 type Options struct {
 	OneFile string
 	Force   bool
+	NoCopy  bool
 }
 
 func (me *Autosort) Action(c *cli.Context) error {
@@ -62,10 +67,12 @@ func (me *Autosort) Action(c *cli.Context) error {
 	source := c.String("source")
 	onefile := c.String("onefile")
 	force := c.Bool("force")
+	nocopy := c.Bool("no-copy")
 
 	opts := &Options{}
 	opts.OneFile = onefile
 	opts.Force = force
+	opts.NoCopy = nocopy
 
 	err := me.PrepareSourceDir(sourceDir)
 	if err != nil {

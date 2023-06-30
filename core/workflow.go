@@ -29,4 +29,7 @@ type Workflow struct {
 
 	// destination path
 	DestinationDir string
+
+	// instructs the CopyFile action to do nothing
+	NoCopy bool
 }

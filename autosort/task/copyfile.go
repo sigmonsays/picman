@@ -15,7 +15,12 @@ type CopyFile struct {
 }
 
 func (me *CopyFile) Run(state *core.State) error {
+	if me.Workflow.NoCopy {
+		return nil
+	}
+
 	log.Tracef("start %s", state.OriginalFilename)
+
 	if state.DestinationFilename == "" {
 		log.Tracef("DestinationFilename required")
 		return nil

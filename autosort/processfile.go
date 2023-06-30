@@ -28,6 +28,7 @@ func (me *Autosort) ProcessFile(root, fullpath string, info fs.FileInfo, dstdir 
 	workflow.Info = info
 	workflow.RelPath = relpath
 	workflow.DestinationDir = dstdir
+	workflow.NoCopy = opts.NoCopy
 
 	state := core.NewState()
 
