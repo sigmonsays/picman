@@ -1,6 +1,5 @@
 #!/usr/bin/env sh
 
-
 incoming=/data/Pictures-Android/AndroidDCIM/Camera
 incoming=/data/Pictures-tmp
 
