@@ -21,6 +21,12 @@ func (me *CopyFile) Run(state *core.State) error {
 		return nil
 	}
 
+	// prevent accidental invocation where source and destination are the same file
+	if state.OriginalFilename == state.DestinationFilename {
+		log.Warnf("Cowardly refusing to copy with same source and destination path: %s", state.OriginalFilename)
+		return nil
+	}
+
 	if state.FileCopied {
 		log.Tracef("file already copied")
 		return nil
