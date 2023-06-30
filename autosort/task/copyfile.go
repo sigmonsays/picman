@@ -2,6 +2,7 @@ package task
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/sigmonsays/picman/core"
 )
@@ -38,6 +39,14 @@ func (me *CopyFile) Run(state *core.State) error {
 	if state.FileCopied {
 		log.Tracef("file already copied")
 		return nil
+	}
+
+	// check if destination dir exists
+	destdir := filepath.Dir(state.DestinationFilename)
+	_, err := os.Stat(destdir)
+	if os.IsNotExist(err) {
+		os.MkdirAll(destdir, core.DirMask)
+		state.Logf("Created destdir %s", destdir)
 	}
 
 	// check if the destination exists already

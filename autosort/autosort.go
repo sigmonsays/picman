@@ -10,8 +10,6 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var DirMask = os.FileMode(0755)
-
 type Autosort struct {
 	App *core.App
 }
@@ -108,9 +106,9 @@ func (me *Autosort) Action(c *cli.Context) error {
 func (me *Autosort) PrepareSourceDir(srcdir string) error {
 	// begin procesing
 	statedir := filepath.Join(srcdir, StateSubDir)
-	os.MkdirAll(statedir, DirMask)
+	os.MkdirAll(statedir, core.DirMask)
 	errordir := filepath.Join(srcdir, ErrorSubDir)
-	os.MkdirAll(errordir, DirMask)
+	os.MkdirAll(errordir, core.DirMask)
 
 	// ensure statedir exists
 	st, err := os.Stat(statedir)
