@@ -37,7 +37,7 @@ func (me *CopyFile) Run(state *core.State) error {
 	}
 
 	if state.FileCopied {
-		log.Tracef("file already copied")
+		log.Tracef("file already copied %s", state.DestinationFilename)
 		return nil
 	}
 
