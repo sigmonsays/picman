@@ -18,6 +18,7 @@ type CopyFile struct {
 
 func (me *CopyFile) Run(state *core.State) error {
 	if me.Workflow.NoCopy {
+		log.Tracef("Not copying file due to no-copy flag")
 		return nil
 	}
 
