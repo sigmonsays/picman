@@ -68,6 +68,7 @@ func RunWorkflow(workflow *core.Workflow, state *core.State, opts *Options) erro
 	log.Tracef("state file %s", statefile)
 
 	if opts.Force {
+		log.Tracef("Force used, removing state file %s", statefile)
 		os.Remove(statefile)
 	}
 
