@@ -77,6 +77,8 @@ func (me *Autosort) Action(c *cli.Context) error {
 		return err
 	}
 
+	stats := &Stats{}
+
 	if onefile != "" {
 		fullpath := onefile
 		if x, err := filepath.Abs(onefile); err == nil {
@@ -88,14 +90,14 @@ func (me *Autosort) Action(c *cli.Context) error {
 			return err
 		}
 
-		err = me.ProcessFile(sourceDir, fullpath, info, destDir, source, opts)
+		err = me.ProcessFile(sourceDir, fullpath, info, destDir, source, opts, stats)
 		if err != nil {
 			return err
 		}
 		return nil
 	}
 
-	err = me.ProcessDir(sourceDir, destDir, source, opts)
+	err = me.ProcessDir(sourceDir, destDir, source, opts, stats)
 	if err != nil {
 		return err
 	}
@@ -122,7 +124,7 @@ func (me *Autosort) PrepareSourceDir(srcdir string) error {
 	return nil
 }
 
-func (me *Autosort) ProcessDir(srcdir, dstdir string, source string, opts *Options) error {
+func (me *Autosort) ProcessDir(srcdir, dstdir string, source string, opts *Options, stats *Stats) error {
 	log.Tracef("ProcessDir %s", srcdir)
 
 	walkfn := func(path string, info fs.FileInfo, err error) error {
@@ -134,7 +136,7 @@ func (me *Autosort) ProcessDir(srcdir, dstdir string, source string, opts *Optio
 			return nil
 		}
 
-		err = me.ProcessFile(srcdir, path, info, dstdir, source, opts)
+		err = me.ProcessFile(srcdir, path, info, dstdir, source, opts, stats)
 		if err != nil {
 			if err == core.StopWorkflow {
 				return fmt.Errorf("%s indicates stop workflow", path)

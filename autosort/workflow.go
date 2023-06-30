@@ -14,9 +14,10 @@ import (
 var StateSubDir = ".picman/state"
 var ErrorSubDir = ".picman/error"
 
-func RunWorkflow(workflow *core.Workflow, state *core.State, opts *Options) error {
+func RunWorkflow(workflow *core.Workflow, state *core.State, opts *Options, stats *Stats) error {
 	log.Tracef("")
 	log.Tracef("start %s", workflow.Fullpath)
+	stats.Processed++
 
 	steps := []struct {
 		Name string
