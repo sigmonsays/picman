@@ -7,11 +7,11 @@ import (
 	"github.com/sigmonsays/picman/core"
 )
 
-func (me *Cleanup) ProcessFile(statefile string, opts *Options, stats *Stats) error {
+func (me *Cleanup) ProcessFile(srcdir string, statefile string, opts *Options, stats *Stats) error {
 
 	state := core.NewState()
 
-	err := RunCleanup(statefile, opts, stats)
+	err := RunCleanup(srcdir, statefile, opts, stats)
 
 	// if a test file is set, add extra info
 	if opts.OneFile != "" {

@@ -72,7 +72,7 @@ func (me *Cleanup) Action(c *cli.Context) error {
 		}
 		log.Tracef("onefile test %s", statefile)
 
-		err = me.ProcessFile(statefile, opts, stats)
+		err = me.ProcessFile(sourceDir, statefile, opts, stats)
 		if err != nil {
 			return err
 		}
@@ -109,7 +109,7 @@ func (me *Cleanup) ProcessDir(srcdir string, opts *Options, stats *Stats) error 
 			return nil
 		}
 
-		err = me.ProcessFile(statefile, opts, stats)
+		err = me.ProcessFile(srcdir, statefile, opts, stats)
 		if err != nil {
 			log.Warnf("ProcessFile %s: %s", statefile, err)
 		}
