@@ -62,11 +62,15 @@ func RunWorkflow(workflow *core.Workflow, state *core.State, opts *Options, stat
 	fmt.Fprintf(cs, workflow.Fullpath)
 	sha := cs.Sum(nil)
 	shaStr := hex.EncodeToString(sha)
+	sha6 := shaStr[:6]
+	sha2 := shaStr[:2]
 	basename := filepath.Base(workflow.Fullpath)
-	statebasename := basename + "-" + shaStr[:6] + ".json"
-	statefile := filepath.Join(workflow.Root, StateSubDir, statebasename)
-	errorfile := filepath.Join(workflow.Root, ErrorSubDir, statebasename)
+	statebasename := basename + "-" + sha6 + ".json"
+	statefile := filepath.Join(workflow.Root, StateSubDir, sha2, statebasename)
+	errorfile := filepath.Join(workflow.Root, ErrorSubDir, sha2, statebasename)
 	log.Tracef("state file %s", statefile)
+	core.EnsureParentDirExists(statefile)
+	core.EnsureParentDirExists(errorfile)
 
 	if opts.Force {
 		log.Tracef("Force used, removing state file %s", statefile)

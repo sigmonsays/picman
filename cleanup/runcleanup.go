@@ -1,64 +1,108 @@
 package cleanup
 
 import (
-	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/sigmonsays/picman/core"
 )
 
-func NewResult(symbol string, msg string) *Result {
-	ret := &Result{
+func NewReason(symbol string, msg string) *Reason {
+	ret := &Reason{
 		Symbol:  symbol,
 		Message: msg,
 	}
 	return ret
 }
 
-type Result struct {
+type Reason struct {
 	Symbol  string
 	Message string
 }
 
-func (me *Result) Error() string {
-	return fmt.Sprintf("%s: %s", me.Symbol, me.Message)
-}
-
 var (
-	DestinationEmpty     = NewResult("DestinationEmpty", "destination field is empty")
-	NoDestination        = NewResult("NoDestination", "No destination file exists")
-	DestinationIsNotFile = NewResult("DestinationIsNotFile", "destination is not a regular file")
-	DoNotProcess         = NewResult("DoNotProcess", "do not process")
+	LoadError            = NewReason("LoadError", "load state error")
+	DestinationEmpty     = NewReason("DestinationEmpty", "destination field is empty")
+	NoDestination        = NewReason("NoDestination", "No destination file exists")
+	DestinationIsNotFile = NewReason("DestinationIsNotFile", "destination is not a regular file")
+	DoNotProcess         = NewReason("DoNotProcess", "do not process")
+	FileTypeNotSupported = NewReason("FileTypeNotSupported", "file type not supported")
 )
 
-func RunCleanup(srcdir string, statefile string, opts *Options, stats *Stats) error {
+type Result struct {
+	Row []string
+}
+
+func (me *Result) Finish() {
+	expected := 5
+	if len(me.Row) == expected {
+		return
+	}
+	for i := 0; i < expected-len(me.Row); i++ {
+		me.Row = append(me.Row, "\t")
+	}
+}
+func (me *Result) WithReason(r *Reason) *Result {
+	me.Row = append(me.Row, r.Symbol)
+	return me
+}
+func (me *Result) Print() error {
+	return nil
+}
+
+func RunCleanup(srcdir string, statefile string, opts *Options, stats *Stats) *Result {
 	log.Tracef("")
 	log.Tracef("start %s", statefile)
 	stats.Processed++
 
+	ret := &Result{}
+
 	state := core.NewState()
 	err := state.Load(statefile)
 	if err != nil {
-		return err
+		return ret.WithReason(LoadError)
 	}
 
 	if state.DestinationFilename == "" {
-		return DestinationEmpty
+		ret.WithReason(DestinationEmpty)
 	}
 
-	var result *Result
+	var reason *Reason
 
 	// make sure the destination exists and is a regular file
 	destExists := false
 	destInfo, err := os.Stat(state.DestinationFilename)
 	if err != nil {
-		result = NoDestination
+		reason = NoDestination
 		destExists = false
 	}
-	if destInfo.Mode().IsRegular() == false {
-		result = DestinationIsNotFile
+
+	if destExists && destInfo.Mode().IsRegular() == false {
+		reason = DestinationIsNotFile
 		destExists = false
 	}
+
+	if destExists {
+	}
+
+	if core.IsFileExtSupported(state.Ext) != nil {
+		reason = FileTypeNotSupported
+	}
+
+	row := []string{}
+
+	if reason == nil {
+		row = append(row, "OK")
+	} else {
+		row = append(row, reason.Symbol)
+	}
+	row = append(row, state.Ext)
+
+	// src path
+	srcrel, _ := filepath.Rel(srcdir, state.OriginalFilename)
+	row = append(row, srcrel)
+	row = append(row, state.DestinationFilename)
+	ret.Row = row
 
 	// check if our type is supported
 
@@ -68,5 +112,5 @@ func RunCleanup(srcdir string, statefile string, opts *Options, stats *Stats) er
 
 	// fmt.Printf("%s\n", buf)
 
-	return nil
+	return ret
 }
