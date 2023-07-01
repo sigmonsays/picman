@@ -101,7 +101,12 @@ func (me *State) Save(path string) error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(path, buf, StateMask)
+	tmppath := path + ".tmp"
+	err = ioutil.WriteFile(tmppath, buf, StateMask)
+	if err != nil {
+		return err
+	}
+	err = os.Rename(tmppath, path)
 	if err != nil {
 		return err
 	}

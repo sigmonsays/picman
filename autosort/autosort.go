@@ -106,9 +106,14 @@ func (me *Autosort) Action(c *cli.Context) error {
 	stopTs := time.Now()
 	dur := stopTs.Sub(startTs)
 	durMs := int64(dur.Milliseconds())
-	rate := stats.Processed / int(dur.Seconds())
-
-	log.Infof("processed %d files in %d ms (%d files/sec)", stats.Processed, durMs, rate)
+	rate := 0
+	durSec := int(dur.Seconds())
+	ratestr := ""
+	if durSec > 0 && stats.Processed > 0 {
+		rate = stats.Processed / durSec
+		ratestr = fmt.Sprintf("(%d files/sec)", rate)
+	}
+	log.Infof("processed %d files in %d ms %s", stats.Processed, durMs, ratestr)
 	return nil
 }
 
