@@ -69,8 +69,6 @@ func RunWorkflow(workflow *core.Workflow, state *core.State, opts *Options, stat
 	statefile := filepath.Join(workflow.Root, StateSubDir, sha2, statebasename)
 	errorfile := filepath.Join(workflow.Root, ErrorSubDir, sha2, statebasename)
 	log.Tracef("state file %s", statefile)
-	core.EnsureParentDirExists(statefile)
-	core.EnsureParentDirExists(errorfile)
 
 	if opts.Force {
 		log.Tracef("Force used, removing state file %s", statefile)

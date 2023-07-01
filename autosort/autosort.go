@@ -120,9 +120,15 @@ func (me *Autosort) Action(c *cli.Context) error {
 func (me *Autosort) PrepareSourceDir(srcdir string) error {
 	// begin procesing
 	statedir := filepath.Join(srcdir, StateSubDir)
-	os.MkdirAll(statedir, core.DirMask)
 	errordir := filepath.Join(srcdir, ErrorSubDir)
-	os.MkdirAll(errordir, core.DirMask)
+
+	for i := 0; i <= 255; i++ {
+		h := fmt.Sprintf("%02x", i)
+		d := filepath.Join(statedir, h)
+		os.MkdirAll(d, core.DirMask)
+		d = filepath.Join(errordir, h)
+		os.MkdirAll(d, core.DirMask)
+	}
 
 	// ensure statedir exists
 	st, err := os.Stat(statedir)
