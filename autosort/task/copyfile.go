@@ -68,6 +68,7 @@ func (me *CopyFile) Run(state *core.State) error {
 		written, state.DestinationFilename)
 
 	state.FileCopied = true
+	log.Infof("Copied %s to %s", state.OriginalFilename, state.DestinationFilename)
 
 	return nil
 }

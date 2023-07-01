@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 )
 
 func CopyFile(src, dst string) (int64, error) {
@@ -22,11 +23,24 @@ func CopyFile(src, dst string) (int64, error) {
 	}
 	defer source.Close()
 
-	destination, err := os.Create(dst)
+	dstdir := filepath.Dir(dst)
+	dstbase := filepath.Base(dst)
+	dsttmp := filepath.Join(dstdir, ".tmp"+dstbase+".tmp")
+
+	destination, err := os.Create(dsttmp)
 	if err != nil {
 		return 0, err
 	}
 	defer destination.Close()
 	nBytes, err := io.Copy(destination, source)
+	if err != nil {
+		return nBytes, err
+	}
+
+	err = os.Rename(dsttmp, dst)
+	if err != nil {
+		return 0, err
+	}
+
 	return nBytes, err
 }
