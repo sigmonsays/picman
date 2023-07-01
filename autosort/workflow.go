@@ -1,14 +1,23 @@
 package autosort
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/sigmonsays/picman/autosort/task"
 	"github.com/sigmonsays/picman/core"
 )
 
-func RunWorkflow(workflow *core.Workflow) error {
+var StateSubDir = ".picman/state"
+var ErrorSubDir = ".picman/error"
+
+func RunWorkflow(workflow *core.Workflow, state *core.State, opts *Options, stats *Stats) error {
+	log.Tracef("")
 	log.Tracef("start %s", workflow.Fullpath)
+	stats.Processed++
 
 	steps := []struct {
 		Name string
@@ -22,23 +31,82 @@ func RunWorkflow(workflow *core.Workflow) error {
 			Name: "CheckSupportedType",
 			Task: task.NewCheckSupportedType(workflow),
 		},
+		{
+			Name: "PopulateExif",
+			Task: task.NewPopulateExif(workflow),
+		},
+		{
+			Name: "CheckExif",
+			Task: task.NewCheckExif(workflow),
+		},
+		{
+			Name: "ObtainDateTaken",
+			Task: task.NewObtainDateTaken(workflow),
+		},
+		{
+			Name: "ChecksumFile",
+			Task: task.NewChecksumFile(workflow),
+		},
+		{
+			Name: "GenerateFinalName",
+			Task: task.NewGenerateFinalName(workflow),
+		},
+		{
+			Name: "CopyFile",
+			Task: task.NewCopyFile(workflow),
+		},
 	}
 
-	// start a state file
-	state := core.NewState()
-
 	// determine the state path
-	statefile := filepath.Join(workflow.Root, ".picman/state")
+	cs := sha256.New()
+	fmt.Fprintf(cs, workflow.Fullpath)
+	sha := cs.Sum(nil)
+	shaStr := hex.EncodeToString(sha)
+	basename := filepath.Base(workflow.Fullpath)
+	statebasename := basename + "-" + shaStr[:6] + ".json"
+	statefile := filepath.Join(workflow.Root, StateSubDir, statebasename)
+	errorfile := filepath.Join(workflow.Root, ErrorSubDir, statebasename)
+	log.Tracef("state file %s", statefile)
+
+	if opts.Force {
+		log.Tracef("Force used, removing state file %s", statefile)
+		os.Remove(statefile)
+	}
+
+	if st, err := os.Stat(statefile); err == nil && st.IsDir() == false {
+		state.Load(statefile)
+	}
+
+	var taskErr error
 
 	for _, step := range steps {
 		log.Tracef("run task %s for %s", step.Name, workflow.Fullpath)
-		err := step.Task.Run(state)
+		taskErr = step.Task.Run(state)
+
+		err := state.Save(statefile)
 		if err != nil {
-			log.Warnf("step %s on %s failed: %s", step.Name, workflow.Fullpath, err)
+			log.Warnf("save state file %s failed: %s", statefile, err)
 			break
 		}
 
-		state.Save(statepath)
+		if taskErr != nil {
+			// tasks have one way to stop processing
+			if taskErr == core.StopProcessing {
+				return core.StopProcessing
+
+			} else if taskErr == core.SkipStep {
+				continue
+			}
+
+			log.Warnf("step:%s %s failed: %s", step.Name, workflow.Fullpath, taskErr)
+			break
+		}
+
 	}
+
+	if taskErr != nil {
+		os.Symlink(statefile, errorfile)
+	}
+
 	return nil
 }

@@ -2,6 +2,7 @@ package core
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"time"
@@ -23,6 +24,16 @@ func NewState() *State {
 }
 
 type State struct {
+
+	// source device of image
+	// - Phone10 for phone
+	Source string
+
+	// do not process
+	DoNotProcess bool
+
+	// true if file copied to final destination filename
+	FileCopied bool
 
 	// full path to the original filename we're importing
 	OriginalFilename string
@@ -58,20 +69,33 @@ type Checksum struct {
 	Sha256 string
 }
 
-type ExifData struct {
-	Values map[string]string
-}
-
 type Date struct {
 	Year, Month, Day     int
 	Hour, Minute, Second int
+
+	DateKey string
 }
 
+func (me *State) StopProcessing(s string, args ...interface{}) error {
+	me.DoNotProcess = true
+	me.Logf(s, args...)
+	return StopProcessing
+}
+
+func (me *State) Load(path string) error {
+
+	buf, err := ioutil.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(buf, me)
+	if err != nil {
+		return err
+	}
+	return nil
+
+}
 func (me *State) Save(path string) error {
-	// cs := sha256.New()
-	// fmt.Fprintf(cs, me.OriginalFilename)
-	// sha := cs.Sum(nil)
-	// shaStr := hex.EncodeToString(sha)
 
 	buf, err := json.MarshalIndent(me, "", " ")
 	if err != nil {
@@ -82,4 +106,9 @@ func (me *State) Save(path string) error {
 		return err
 	}
 	return nil
+}
+
+func (me *State) Logf(s string, args ...interface{}) {
+	msg := fmt.Sprintf(s, args...)
+	me.Logs = append(me.Logs, msg)
 }

@@ -19,6 +19,13 @@ type CheckSupportedType struct {
 }
 
 func (me *CheckSupportedType) Run(state *core.State) error {
+
+	// if we've already processed this then just abort
+	if state.DoNotProcess {
+		log.Tracef("DoNotProcess is set, StopProcessing")
+		return core.StopProcessing
+	}
+
 	// populate state file with extension
 	base := filepath.Base(state.OriginalFilename)
 	base = strings.ToLower(base)
@@ -29,7 +36,9 @@ func (me *CheckSupportedType) Run(state *core.State) error {
 	process := (err == nil)
 
 	if !process {
-		return fmt.Errorf("do not process: %s", err)
+		state.DoNotProcess = true
+		state.Logf("%s", err)
+		return core.StopProcessing
 	}
 	return nil
 }
@@ -48,6 +57,8 @@ func ShouldProcess(path string, state *core.State) error {
 	if stat.Size == 0 {
 		return fmt.Errorf("skip zero byte file %s", path)
 	}
+	log.Tracef("size is non-zero %s", path)
+
 	if state.Ext == "" {
 		return fmt.Errorf("No extension provided")
 	}
@@ -59,5 +70,8 @@ func ShouldProcess(path string, state *core.State) error {
 	if supported == false {
 		return fmt.Errorf("Not supported")
 	}
+
+	log.Tracef("extension %s supported: %s", state.Ext, path)
+
 	return nil
 }

@@ -14,6 +14,22 @@ func main() {
 	autosort := &autosort.Autosort{appCtx}
 
 	app := &cli.App{}
+	appCtx.Init()
+	app.Before = func(c *cli.Context) error {
+		loglevel := c.String("loglevel")
+		if loglevel != "" {
+			appCtx.SetLogLevel(loglevel)
+		}
+		return nil
+	}
+	app.Flags = []cli.Flag{
+		&cli.StringFlag{
+			Name:    "loglevel",
+			Usage:   "set log level",
+			Aliases: []string{"l"},
+			Value:   "INFO",
+		},
+	}
 	app.Commands = []*cli.Command{
 		{
 			Name:   "autosort",
