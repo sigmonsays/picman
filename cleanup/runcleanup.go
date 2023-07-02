@@ -97,7 +97,12 @@ func RunCleanup(srcdir string, statefile string, opts *Options, stats *Stats) *R
 	} else {
 		row = append(row, reason.Symbol)
 	}
-	row = append(row, state.Ext)
+	if state.Ext == "" {
+		row = append(row, "-")
+	} else {
+		row = append(row, state.Ext)
+
+	}
 
 	// src path
 	srcrel, _ := filepath.Rel(srcdir, state.OriginalFilename)
