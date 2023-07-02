@@ -90,6 +90,11 @@ func RunCleanup(srcdir string, statefile string, opts *Options, stats *Stats) *R
 		reason = FileTypeNotSupported
 	}
 
+	// output the row
+	// - reason
+	// - ext
+	// - srcpath (relative)
+	// - dstpath (absolute)
 	row := []string{}
 
 	if reason == nil {
@@ -107,6 +112,8 @@ func RunCleanup(srcdir string, statefile string, opts *Options, stats *Stats) *R
 	// src path
 	srcrel, _ := filepath.Rel(srcdir, state.OriginalFilename)
 	row = append(row, srcrel)
+
+	// dest path
 	row = append(row, state.DestinationFilename)
 	ret.Row = row
 
