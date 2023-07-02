@@ -29,6 +29,8 @@ func (me *CheckSupportedType) Run(state *core.State) error {
 	// populate state file with extension
 	base := filepath.Base(state.OriginalFilename)
 	base = strings.ToLower(base)
+	// strip leading dot for hidden files
+	base = strings.TrimLeft(base, ".")
 	ext := filepath.Ext(base)
 	state.Ext = ext
 
