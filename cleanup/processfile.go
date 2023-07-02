@@ -10,7 +10,7 @@ func (me *Cleanup) ProcessFile(srcdir string, statefile string, opts *Options, s
 	result := RunCleanup(srcdir, statefile, opts, stats)
 	result.Finish()
 
-	fmt.Printf("ROW %s\n", strings.Join(result.Row, "\t"))
+	fmt.Printf("%s\n", strings.Join(result.Row, "\t"))
 
 	return nil
 }

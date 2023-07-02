@@ -85,6 +85,7 @@ func RunCleanup(srcdir string, statefile string, opts *Options, stats *Stats) *R
 	if destExists {
 	}
 
+	// check if our type is supported
 	if core.IsFileExtSupported(state.Ext) != nil {
 		reason = FileTypeNotSupported
 	}
@@ -104,13 +105,8 @@ func RunCleanup(srcdir string, statefile string, opts *Options, stats *Stats) *R
 	row = append(row, state.DestinationFilename)
 	ret.Row = row
 
-	// check if our type is supported
-
-	// buf, _ := json.MarshalIndent(state, "", "  ")
-
 	// todo: if DoNotProcess is set we just delete the metadata file
-
-	// fmt.Printf("%s\n", buf)
+	// maybe we need a --delete flag
 
 	return ret
 }
