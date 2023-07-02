@@ -29,6 +29,8 @@ func (me *CheckSupportedType) Run(state *core.State) error {
 	// populate state file with extension
 	base := filepath.Base(state.OriginalFilename)
 	base = strings.ToLower(base)
+	// strip leading dot for hidden files
+	base = strings.TrimLeft(base, ".")
 	ext := filepath.Ext(base)
 	state.Ext = ext
 
@@ -43,15 +45,6 @@ func (me *CheckSupportedType) Run(state *core.State) error {
 	return nil
 }
 
-var SupportedImageExt = map[string]bool{
-	".heic": true,
-	".jpeg": true,
-	".jpg":  true,
-	".png":  true,
-	".mov":  true,
-	".mp4":  true,
-}
-
 func ShouldProcess(path string, state *core.State) error {
 	stat := state.Stat
 	if stat.Size == 0 {
@@ -63,12 +56,9 @@ func ShouldProcess(path string, state *core.State) error {
 		return fmt.Errorf("No extension provided")
 	}
 
-	supported, found := SupportedImageExt[state.Ext]
-	if found == false {
-		return fmt.Errorf("ext %s is not supported", state.Ext)
-	}
-	if supported == false {
-		return fmt.Errorf("Not supported")
+	err := core.IsFileExtSupported(state.Ext)
+	if err != nil {
+		return err
 	}
 
 	log.Tracef("extension %s supported: %s", state.Ext, path)

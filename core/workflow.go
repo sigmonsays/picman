@@ -18,17 +18,17 @@ var (
 
 type Workflow struct {
 
-	// source flag given on cli
+	// source flag given on cli (Phone10, Pixel7, etc)
 	Source string
 
-	// information about the file
-	Root     string
-	Fullpath string
-	Info     fs.FileInfo
-	RelPath  string
+	// information about the image/video file
+	Root     string      // --source-directory
+	Fullpath string      // absolute path to image
+	Info     fs.FileInfo // file stat data
+	RelPath  string      // relative path to Root
 
 	// destination path
-	DestinationDir string
+	DestinationDir string // --destination-directory
 
 	// instructs the CopyFile action to do nothing
 	NoCopy bool
