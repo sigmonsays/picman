@@ -9,6 +9,10 @@ func (me *Cleanup) ProcessFile(srcdir string, statefile string, opts *Options, s
 
 	result := RunCleanup(srcdir, statefile, opts, stats)
 
+	if !result.HasError() {
+		return nil
+	}
+
 	buf, _ := json.MarshalIndent(result, "", "  ")
 	fmt.Printf("%s\n", buf)
 

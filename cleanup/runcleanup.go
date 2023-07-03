@@ -31,16 +31,32 @@ var (
 )
 
 type Result struct {
-	OriginalFile         string
-	DestinationFile      string
-	LoadError            bool
-	DestinationEmpty     bool
-	NoDestination        bool
-	DestinationIsNotFile bool
-	DoNotProcess         bool
-	FileTypeNotSupported bool
-	MissingDate          bool
-	SourceMissing        bool
+	OriginalFile    string
+	DestinationFile string
+
+	LoadError            bool `json:"load_error,omitempty"`
+	DestinationEmpty     bool `json:"destination_empty,omitempty"`
+	NoDestination        bool `json:"no_destination,omitempty"`
+	DestinationIsNotFile bool `json:"destination_is_not_file,omitempty"`
+	DoNotProcess         bool `json:"do_not_process,omitempty"`
+	FileTypeNotSupported bool `json:"file_type_not_supported,omitempty"`
+	MissingDate          bool `json:"missing_date,omitempty"`
+	SourceMissing        bool `json:"source_missing,omitempty"`
+}
+
+func (me *Result) HasError() bool {
+	if me.LoadError ||
+		me.DestinationEmpty ||
+		me.DestinationEmpty ||
+		me.NoDestination ||
+		me.DestinationIsNotFile ||
+		me.DoNotProcess ||
+		me.FileTypeNotSupported ||
+		me.MissingDate ||
+		me.SourceMissing {
+		return true
+	}
+	return false
 }
 
 func RunCleanup(srcdir string, statefile string, opts *Options, stats *Stats) *Result {
