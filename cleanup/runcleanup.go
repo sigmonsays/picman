@@ -34,6 +34,8 @@ type Result struct {
 	OriginalFile    string
 	DestinationFile string
 
+	Errors int
+
 	LoadError            bool `json:"load_error,omitempty"`
 	DestinationEmpty     bool `json:"destination_empty,omitempty"`
 	NoDestination        bool `json:"no_destination,omitempty"`
@@ -44,17 +46,34 @@ type Result struct {
 	SourceMissing        bool `json:"source_missing,omitempty"`
 }
 
+func (me *Result) GetErrors() []bool {
+	errors := []bool{
+		me.LoadError,
+		me.DestinationEmpty,
+		me.NoDestination,
+		me.DestinationIsNotFile,
+		me.DoNotProcess,
+		me.FileTypeNotSupported,
+		me.MissingDate,
+		me.SourceMissing,
+	}
+	return errors
+}
+func (me *Result) CountErrors() int {
+	cnt := 0
+	for _, e := range me.GetErrors() {
+		if e {
+			cnt++
+		}
+	}
+	return cnt
+}
+
 func (me *Result) HasError() bool {
-	if me.LoadError ||
-		me.DestinationEmpty ||
-		me.DestinationEmpty ||
-		me.NoDestination ||
-		me.DestinationIsNotFile ||
-		me.DoNotProcess ||
-		me.FileTypeNotSupported ||
-		me.MissingDate ||
-		me.SourceMissing {
-		return true
+	for _, e := range me.GetErrors() {
+		if e {
+			return true
+		}
 	}
 	return false
 }
@@ -103,6 +122,8 @@ func RunCleanup(srcdir string, statefile string, opts *Options, stats *Stats) *R
 	if state.Date == nil || (state.Date.Year == 0 || state.Date.Month == 0) {
 		ret.MissingDate = true
 	}
+
+	ret.Errors = ret.CountErrors()
 
 	// todo: if DoNotProcess is set we just delete the metadata file
 	// maybe we need a --delete flag
