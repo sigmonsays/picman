@@ -6,14 +6,16 @@ import (
 	"github.com/sigmonsays/picman/autosort"
 	"github.com/sigmonsays/picman/cleanup"
 	"github.com/sigmonsays/picman/core"
+	"github.com/sigmonsays/picman/list"
 	"github.com/urfave/cli/v2"
 )
 
 func main() {
 
 	appCtx := &core.App{}
-	autosort := &autosort.Autosort{appCtx}
-	cleanup := &cleanup.Cleanup{appCtx}
+	autosortCmd := &autosort.Autosort{appCtx}
+	cleanupCmd := &cleanup.Cleanup{appCtx}
+	listCmd := &list.List{appCtx}
 
 	app := &cli.App{}
 	appCtx.Init()
@@ -36,14 +38,20 @@ func main() {
 		{
 			Name:   "autosort",
 			Usage:  "autosort pictures",
-			Action: autosort.Action,
-			Flags:  autosort.Flags(),
+			Action: autosortCmd.Action,
+			Flags:  autosortCmd.Flags(),
 		},
 		{
 			Name:   "cleanup",
 			Usage:  "cleanup state files after import",
-			Action: cleanup.Action,
-			Flags:  cleanup.Flags(),
+			Action: cleanupCmd.Action,
+			Flags:  cleanupCmd.Flags(),
+		},
+		{
+			Name:   "list",
+			Usage:  "list all state files",
+			Action: listCmd.Action,
+			Flags:  listCmd.Flags(),
 		},
 	}
 	err := app.Run(os.Args)
