@@ -1,16 +1,11 @@
 package list
 
-import (
-	"encoding/json"
-	"fmt"
-)
-
 func (me *List) ProcessFile(srcdir string, statefile string, opts *Options) error {
 
-	result := PrintState(srcdir, statefile, opts)
-
-	buf, _ := json.MarshalIndent(result, "", "  ")
-	fmt.Printf("%s\n", buf)
+	err := PrintState(srcdir, statefile, opts)
+	if err != nil {
+		log.Debugf("PrintState %s: %s", statefile, err)
+	}
 
 	return nil
 }
