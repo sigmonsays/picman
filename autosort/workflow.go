@@ -14,6 +14,7 @@ import (
 var StateSubDir = ".picman/state"
 var ErrorSubDir = ".picman/error"
 
+// run the import workflow for a single file
 func RunWorkflow(workflow *core.Workflow, state *core.State, opts *Options, stats *Stats) error {
 	log.Tracef("")
 	log.Tracef("start %s", workflow.Fullpath)
@@ -81,6 +82,8 @@ func RunWorkflow(workflow *core.Workflow, state *core.State, opts *Options, stat
 
 	var taskErr error
 
+	fileCopied := state.FileCopied
+
 	for _, step := range steps {
 		log.Tracef("run task %s for %s", step.Name, workflow.Fullpath)
 		taskErr = step.Task.Run(state)
@@ -104,6 +107,11 @@ func RunWorkflow(workflow *core.Workflow, state *core.State, opts *Options, stat
 			break
 		}
 
+	}
+
+	// check if the file has just been copied this run
+	if fileCopied == false && state.FileCopied == true {
+		stats.Copied += 1
 	}
 
 	if taskErr != nil {

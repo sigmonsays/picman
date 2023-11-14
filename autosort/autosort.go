@@ -96,6 +96,7 @@ func (me *Autosort) Action(c *cli.Context) error {
 		if err != nil {
 			return err
 		}
+
 		return nil
 	}
 
@@ -113,8 +114,8 @@ func (me *Autosort) Action(c *cli.Context) error {
 		rate = stats.Processed / durSec
 		ratestr = fmt.Sprintf("(%d files/sec)", rate)
 	}
-	log.Infof("source directory %s: processed %d files in %d ms %s",
-		sourceDir, stats.Processed, durMs, ratestr)
+	log.Infof("source directory %s: processed %d files (%d copied) in %d ms %s (copied %d)",
+		sourceDir, stats.Processed, stats.Copied, durMs, ratestr)
 	return nil
 }
 
