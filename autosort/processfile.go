@@ -11,6 +11,8 @@ import (
 )
 
 func (me *Autosort) ProcessFile(root, fullpath string, info fs.FileInfo, dstdir string, source string, opts *Options, stats *Stats) error {
+	stats.FilesProcessed++
+
 	relpath, err := filepath.Rel(root, fullpath)
 	if err != nil {
 		return err
@@ -42,7 +44,6 @@ func (me *Autosort) ProcessFile(root, fullpath string, info fs.FileInfo, dstdir 
 		}
 		fmt.Printf("state file:\n%s\n", buf)
 	}
-
 
 	if err != nil {
 		return err

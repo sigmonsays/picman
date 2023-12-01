@@ -1,8 +1,10 @@
 package autosort
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/fs"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
@@ -50,14 +52,28 @@ func (me *Autosort) Flags() []cli.Flag {
 			Usage:   "process just one file",
 			Aliases: []string{""},
 		},
+		&cli.StringFlag{
+			Name:    "output_file",
+			Usage:   "write autosort results to json file",
+			Aliases: []string{"o"},
+		},
 	}
 	return ret
 }
 
 type Options struct {
-	OneFile string
-	Force   bool
-	NoCopy  bool
+	OneFile    string
+	Force      bool
+	NoCopy     bool
+	OutputFile string
+}
+
+type AutosortResults struct {
+	StartTime   string `json:"start_time"`
+	EndTime     string `json:"end_time"`
+	Stats       *Stats `json:"stats"`
+	Rate        int    `json:"rate"`
+	DurationSec int    `json:"duration_sec"`
 }
 
 func (me *Autosort) Action(c *cli.Context) error {
@@ -67,11 +83,13 @@ func (me *Autosort) Action(c *cli.Context) error {
 	onefile := c.String("onefile")
 	force := c.Bool("force")
 	nocopy := c.Bool("no-copy")
+	outputfile := c.String("output_file")
 
 	opts := &Options{}
 	opts.OneFile = onefile
 	opts.Force = force
 	opts.NoCopy = nocopy
+	opts.OutputFile = outputfile
 
 	err := me.PrepareSourceDir(sourceDir)
 	if err != nil {
@@ -80,6 +98,9 @@ func (me *Autosort) Action(c *cli.Context) error {
 
 	startTs := time.Now()
 	stats := &Stats{}
+	results := &AutosortResults{}
+	results.Stats = stats
+	results.StartTime = startTs.Format(time.RFC3339)
 
 	if onefile != "" {
 		fullpath := onefile
@@ -116,6 +137,22 @@ func (me *Autosort) Action(c *cli.Context) error {
 	}
 	log.Infof("source directory %s: processed %d files (%d copied) in %d ms %s",
 		sourceDir, stats.Processed, stats.Copied, durMs, ratestr)
+
+	results.EndTime = stopTs.Format(time.RFC3339)
+	results.Rate = rate
+	results.DurationSec = durSec
+
+	resultsBuf, _ := json.MarshalIndent(results, "", " ")
+	log.Tracef("results buffer:\n%s", resultsBuf)
+
+	if opts.OutputFile != "" {
+		err = ioutil.WriteFile(opts.OutputFile, resultsBuf, 0644)
+		if err != nil {
+			log.Warnf("WriteFile %s: %s", opts.OutputFile, err)
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -146,6 +183,8 @@ func (me *Autosort) PrepareSourceDir(srcdir string) error {
 
 func (me *Autosort) ProcessDir(srcdir, dstdir string, source string, opts *Options, stats *Stats) error {
 	log.Tracef("ProcessDir %s", srcdir)
+
+	stats.DirsProcessed++
 
 	walkfn := func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
