@@ -16,5 +16,6 @@ pkgs.buildGoApplication {
   version = "0.0.1";
   pwd = ./.;
   src = ./.;
+  buildInputs = with pkgs; [ exiftool ];
   modules = ./gomod2nix.toml;
 }

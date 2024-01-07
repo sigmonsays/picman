@@ -4,7 +4,7 @@ with pkgs;
 
 mkShell {
   buildInputs = [
-        go_1_20
+        #go_1_20
         gomod2nix
 
         # runtime deps
