@@ -3,6 +3,7 @@ package cleanup
 import (
 	"fmt"
 	"io/fs"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -15,7 +16,12 @@ type Cleanup struct {
 }
 
 func (me *Cleanup) Flags() []cli.Flag {
-	incomingDir := "/data/Pictures-Android/AndroidDCIM/Camera"
+	// "/data/Pictures-Android/AndroidDCIM/Camera"
+	incomingDir, err := os.Getwd()
+	if err != nil {
+		log.Warnf("Getwd %s", err)
+	}
+
 	destDir := "/data/Pictures"
 
 	ret := []cli.Flag{

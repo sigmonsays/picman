@@ -16,7 +16,11 @@ type Autosort struct {
 }
 
 func (me *Autosort) Flags() []cli.Flag {
-	incomingDir := "/data/Pictures-Android/AndroidDCIM/Camera"
+	incomingDir, err := os.Getwd()
+	if err != nil {
+		log.Warnf("Getwd: %s", err)
+	}
+
 	destDir := "/data/Pictures"
 	ret := []cli.Flag{
 		&cli.BoolFlag{
