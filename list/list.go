@@ -2,6 +2,7 @@ package list
 
 import (
 	"io/fs"
+	"os"
 	"path/filepath"
 
 	"github.com/sigmonsays/picman/core"
@@ -13,8 +14,11 @@ type List struct {
 }
 
 func (me *List) Flags() []cli.Flag {
-	incomingDir := "/data/Pictures-Android/AndroidDCIM/Camera"
-	// destDir := "/data/Pictures"
+	// incomingDir := "/data/Pictures-Android/AndroidDCIM/Camera"
+	incomingDir, err := os.Getwd()
+	if err != nil {
+		log.Warnf("Getwd %s", err)
+	}
 
 	ret := []cli.Flag{
 		&cli.StringFlag{
